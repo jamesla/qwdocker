@@ -23,14 +23,20 @@ USER quake
 
 #CONFIGS
 COPY configs/ktx nquakesv/ktx
-COPY configs/qwfwd nquakesv/qwfwd
 
 #UPDATE SERVER
 WORKDIR /home/ubuntu/nquakesv
-RUN ./update_binaries.sh
-RUN ./update_maps.sh
-RUN ./update_configs.sh
+RUN ./update_binaries.sh --random-mirror --no-restart
+RUN ./update_maps.sh --random-mirror --no-restart 
+RUN ./update_configs.sh --random-mirror --no-restart 
+
+#SCHEDULE UPDATES
+USER root
+RUN echo "30 5 * * 2 /home/quake/nquakesv/update_maps.sh --random-mirror --no-restart >/dev/null 2>&1" >> /etc/cron.daily/update.sh
+RUN echo "30 5 * * 2 /home/quake/nquakesv/update_configs.sh --random-mirror --no-restart >/dev/null 2>&1" >> /etc/cron.daily/update.sh
+RUN echo "30 5 * * 2 /home/quake/nquakesv/update_binaries.sh --random-mirror --no-restart >/dev/null 2>&1" >> /etc/cron.daily/update.sh
+USER quake
 
 #START THE SERVER
 EXPOSE 28501
-CMD ./start_servers.sh
+CMD ./run/ktx.sh
